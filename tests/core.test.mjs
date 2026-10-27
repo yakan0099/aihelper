@@ -1,0 +1,6 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {related,mergeMemories,guard,demo,formatAnswer} from '../docs/core.mjs';
+test('correction retrieved by scope, edited and deleted',()=>{const m={id:'1',scope:'뉴스',updated:1,correction:'결론 먼저'};assert.equal(related([m],'뉴스')[0].correction,'결론 먼저');assert.equal(related([m],'다른 상황').length,0);const edited=mergeMemories([m],[{...m,updated:2,correction:'세 줄'}]);assert.equal(related(edited,'뉴스')[0].correction,'세 줄');const deleted=mergeMemories(edited,[{...m,updated:3,deleted:true}]);assert.equal(related(deleted,'뉴스').length,0);assert.equal(related(mergeMemories(deleted,[m]),'뉴스').length,0)});
+test('guard blocks window, screen and time changes',()=>{const run={answer:'answer',window_id:'w',fingerprint:'a',created:1000};assert.ok(guard(run,run,2000));assert.ok(!guard(run,{...run,window_id:'other'},2000));assert.ok(!guard(run,{...run,fingerprint:'b'},2000));assert.ok(!guard(run,run,301000));assert.ok(!guard(run,run,0))});
+test('demo explicitly labels non-AI excerpt and corrections',()=>{const answer=formatAnswer(demo('기사',[{correction:'결론 먼저'}]));assert.match(answer,/이미지 이해를 수행하지 않았/);assert.match(answer,/AI 요약 아님/);assert.match(answer,/결론 먼저/)});
